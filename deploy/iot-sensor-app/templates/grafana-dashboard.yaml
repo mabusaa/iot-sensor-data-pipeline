@@ -1,0 +1,446 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: sensor-data-dashboard
+  labels:
+    grafana_dashboard: "1"
+data:
+  sensor-data-dashboard.json: |
+        {
+        "annotations": {
+            "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                "type": "grafana",
+                "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+            ]
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": 1,
+        "links": [],
+        "panels": [
+            {
+            "datasource": {
+                "default": true,
+                "type": "grafana-postgresql-datasource",
+                "uid": "P6FFE9BCE28CDFF26"
+            },
+            "fieldConfig": {
+                "defaults": {
+                "custom": {
+                    "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                    },
+                    "scaleDistribution": {
+                    "type": "linear"
+                    }
+                },
+                "fieldMinMax": false
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 13,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 4,
+            "options": {
+                "calculate": false,
+                "calculation": {
+                "xBuckets": {
+                    "mode": "size"
+                },
+                "yBuckets": {
+                    "mode": "size",
+                    "scale": {
+                    "log": 2,
+                    "type": "symlog"
+                    }
+                }
+                },
+                "cellGap": 1,
+                "cellValues": {
+                "unit": "celsius"
+                },
+                "color": {
+                "exponent": 0.5,
+                "fill": "dark-orange",
+                "mode": "scheme",
+                "reverse": true,
+                "scale": "exponential",
+                "scheme": "Reds",
+                "steps": 56
+                },
+                "exemplars": {
+                "color": "red"
+                },
+                "filterValues": {
+                "le": 1e-9
+                },
+                "legend": {
+                "show": true
+                },
+                "rowsFrame": {
+                "layout": "auto"
+                },
+                "tooltip": {
+                "mode": "single",
+                "showColorScale": false,
+                "yHistogram": false
+                },
+                "yAxis": {
+                "axisPlacement": "left",
+                "reverse": false,
+                "unit": "celsius"
+                }
+            },
+            "pluginVersion": "11.2.0",
+            "targets": [
+                {
+                "datasource": {
+                    "type": "grafana-postgresql-datasource",
+                    "uid": "P6FFE9BCE28CDFF26"
+                },
+                "editorMode": "code",
+                "format": "table",
+                "rawQuery": true,
+                "rawSql": "SELECT\r\n  timestamp AS \"time\",\r\n  temperature AS \"Temperature\"\r\nFROM sensor_data\r\nORDER BY timestamp DESC\r\n",
+                "refId": "A",
+                "sql": {
+                    "columns": [
+                    {
+                        "parameters": [],
+                        "type": "function"
+                    }
+                    ],
+                    "groupBy": [
+                    {
+                        "property": {
+                        "type": "string"
+                        },
+                        "type": "groupBy"
+                    }
+                    ],
+                    "limit": 50
+                }
+                }
+            ],
+            "title": "Temperature Distribution Over Time",
+            "type": "heatmap"
+            },
+            {
+            "datasource": {
+                "default": true,
+                "type": "grafana-postgresql-datasource",
+                "uid": "P6FFE9BCE28CDFF26"
+            },
+            "fieldConfig": {
+                "defaults": {
+                "color": {
+                    "mode": "palette-classic-by-name"
+                },
+                "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                    "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "spanNulls": false,
+                    "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                    "mode": "off"
+                    }
+                },
+                "mappings": [],
+                "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                    {
+                        "color": "green",
+                        "value": null
+                    },
+                    {
+                        "color": "red",
+                        "value": 80
+                    }
+                    ]
+                }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 10,
+                "w": 12,
+                "x": 0,
+                "y": 13
+            },
+            "id": 1,
+            "options": {
+                "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": true
+                },
+                "tooltip": {
+                "mode": "single",
+                "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                "datasource": {
+                    "type": "grafana-postgresql-datasource",
+                    "uid": "P6FFE9BCE28CDFF26"
+                },
+                "editorMode": "code",
+                "format": "table",
+                "rawQuery": true,
+                "rawSql": "SELECT temperature, humidity, time_bucket('5s', \"timestamp\") AS \"time\"\r\nFROM sensor_data \r\nGROUP BY time, temperature , humidity\r\nORDER BY time desc",
+                "refId": "A",
+                "sql": {
+                    "columns": [
+                    {
+                        "parameters": [],
+                        "type": "function"
+                    }
+                    ],
+                    "groupBy": [
+                    {
+                        "property": {
+                        "type": "string"
+                        },
+                        "type": "groupBy"
+                    }
+                    ],
+                    "limit": 50
+                }
+                }
+            ],
+            "title": "Temperature and Humidity Over Time",
+            "type": "timeseries"
+            },
+            {
+            "datasource": {
+                "default": true,
+                "type": "grafana-postgresql-datasource",
+                "uid": "P6FFE9BCE28CDFF26"
+            },
+            "fieldConfig": {
+                "defaults": {
+                "color": {
+                    "mode": "thresholds"
+                },
+                "mappings": [],
+                "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                    {
+                        "color": "green",
+                        "value": null
+                    },
+                    {
+                        "color": "red",
+                        "value": 80
+                    }
+                    ]
+                }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 10,
+                "w": 6,
+                "x": 12,
+                "y": 13
+            },
+            "id": 3,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                "calcs": [
+                    "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "11.2.0",
+            "targets": [
+                {
+                "datasource": {
+                    "type": "grafana-postgresql-datasource",
+                    "uid": "P6FFE9BCE28CDFF26"
+                },
+                "editorMode": "code",
+                "format": "table",
+                "rawQuery": true,
+                "rawSql": "SELECT humidity, time_bucket('5s', \"timestamp\") AS \"time\"\r\nFROM sensor_data \r\nGROUP BY time, humidity \r\nORDER BY time desc\r\nLIMIT 1",
+                "refId": "A",
+                "sql": {
+                    "columns": [
+                    {
+                        "parameters": [],
+                        "type": "function"
+                    }
+                    ],
+                    "groupBy": [
+                    {
+                        "property": {
+                        "type": "string"
+                        },
+                        "type": "groupBy"
+                    }
+                    ],
+                    "limit": 50
+                }
+                }
+            ],
+            "title": "Current Humidity",
+            "type": "stat"
+            },
+            {
+            "datasource": {
+                "default": true,
+                "type": "grafana-postgresql-datasource",
+                "uid": "P6FFE9BCE28CDFF26"
+            },
+            "fieldConfig": {
+                "defaults": {
+                "color": {
+                    "mode": "thresholds"
+                },
+                "mappings": [],
+                "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                    {
+                        "color": "green",
+                        "value": null
+                    },
+                    {
+                        "color": "red",
+                        "value": 30
+                    }
+                    ]
+                }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 10,
+                "w": 6,
+                "x": 18,
+                "y": 13
+            },
+            "id": 2,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                "calcs": [
+                    "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "11.2.0",
+            "targets": [
+                {
+                "datasource": {
+                    "type": "grafana-postgresql-datasource",
+                    "uid": "P6FFE9BCE28CDFF26"
+                },
+                "editorMode": "code",
+                "format": "table",
+                "rawQuery": true,
+                "rawSql": "SELECT temperature, time_bucket('5s', \"timestamp\") AS \"time\"\r\nFROM sensor_data \r\nGROUP BY time, temperature \r\nORDER BY time desc\r\nLIMIT 1",
+                "refId": "A",
+                "sql": {
+                    "columns": [
+                    {
+                        "parameters": [],
+                        "type": "function"
+                    }
+                    ],
+                    "groupBy": [
+                    {
+                        "property": {
+                        "type": "string"
+                        },
+                        "type": "groupBy"
+                    }
+                    ],
+                    "limit": 50
+                }
+                }
+            ],
+            "title": "Current Temperature",
+            "type": "stat"
+            }
+        ],
+        "schemaVersion": 39,
+        "tags": [],
+        "templating": {
+            "list": []
+        },
+        "time": {
+            "from": "now-15m",
+            "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "browser",
+        "title": "IoT Sensor Data Dashboard",
+        "uid": "edyumx3419h4wa",
+        "version": 5,
+        "weekStart": ""
+        }

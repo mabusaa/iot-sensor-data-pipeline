@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sensor-data-producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sensor-data-producer
+  template:
+    metadata:
+      labels:
+        app: sensor-data-producer
+    spec:
+      containers:
+      - name: producer
+        imagePullPolicy: Always
+        image: {{ .Values.iotSensorProducer.image }}
+        env:
+          - name: MQTT_BROKER
+            value: {{ .Values.emqx.brokerUrl }}
+          - name: MQTT_PORT
+            value: "1883"
+          - name: MQTT_TOPIC
+            value: {{ .Values.emqx.topic }}
+        ports:
+        - containerPort: 9092
+      initContainers:
+      - name: "init-emqx-check"
+        image: "curlimages/curl"
+        command: ["sh", "-c", "
+          until echo 'dummy' | nc -z {{ .Values.emqx.brokerUrl }} 1883; do
+            echo 'Waiting for emqx to be ready...';
+            sleep 2;
+          done;
+          echo 'emqx is ready.';
+        "]

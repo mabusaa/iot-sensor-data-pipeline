@@ -1,0 +1,37 @@
+name: Docker Build and Publish
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Log in to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push sensor messages producer image
+      run: |
+        docker build -t mabusaa/iot-sensor-messages-producer:latest ./iot-sensor-messages-producer
+        docker push mabusaa/iot-sensor-messages-producer:latest
+
+    - name: Build and push custom Spark image
+      run: |
+        docker build -t mabusaa/iot-spark:latest ./spark-apps
+        docker push mabusaa/iot-spark:latest
+
+    - name: Build and push mqtt to kafka image
+      run: |
+        docker build -t mabusaa/matt-to-kafka:latest ./iot-mqtt-to-kafka
+        docker push mabusaa/matt-to-kafka:latest

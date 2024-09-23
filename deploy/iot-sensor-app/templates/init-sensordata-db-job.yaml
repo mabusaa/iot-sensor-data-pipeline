@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-sensordata-db
+  annotations:
+    "helm.sh/hook": post-install, post-upgrade
+spec:
+  template:
+    spec:
+      containers:
+      - name: init-sensordata-db
+        image: postgres:latest
+        env:
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "sensordb"
+        - name: DB_TABLE
+          value: "sensor_data"
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: DB_HOST
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: DB_USER
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: DB_PASSWORD
+        command: ["sh", "-c", "
+          until psql -h $DB_HOST -U $DB_USER -c 'select 1'; do
+            echo waiting for timescaledb; 
+            sleep 2; 
+          done; 
+          if ! psql -h $DB_HOST -U $DB_USER -lqt | cut -d '|' -f 1 | grep -qw $DB_NAME; then
+            psql -h $DB_HOST -U $DB_USER -c 'CREATE DATABASE sensordb'; 
+          fi; 
+          if ! psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c \"SELECT 1 FROM ${DB_TABLE} LIMIT 1\"; then
+            psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c \"CREATE TABLE ${DB_TABLE} (sensor_id INT, temperature FLOAT, humidity FLOAT, timestamp TIMESTAMPTZ NOT NULL)\"; 
+            psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c \"SELECT create_hypertable('${DB_TABLE}', 'timestamp', if_not_exists => TRUE)\"; 
+          fi;
+        "]
+
+
+      restartPolicy: OnFailure

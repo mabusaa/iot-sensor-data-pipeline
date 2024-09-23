@@ -1,0 +1,100 @@
+iotSensorProducer:
+ image: mabusaa/iot-sensor-messages-producer:latest
+
+mattToKafka:
+  image: mabusaa/matt-to-kafka:latest
+
+spark:
+ image: mabusaa/iot-spark:latest
+
+kafka:
+  brokerUrl: "my-cluster-kafka-bootstrap"
+  brokerPort: "9092"
+  topic: "iot-sensor-data"
+
+timescaledb-single:
+ replicaCount: 1
+ fullnameOverride: "timescaledb"
+ clusterName: "timescaledb"
+
+ secrets:
+  credentialsSecretName: "db-secrets"
+ persistentVolumes:
+  data:
+    enabled: false
+  wal:
+    enabled: true
+
+kafka-ui:
+  yamlApplicationConfig:
+    kafka:
+      clusters:
+        - name: my-cluster
+          bootstrapServers:  my-cluster-kafka-bootstrap:9092
+    auth:
+      type: disabled
+    management:
+      health:
+        ldap:
+          enabled: false
+
+spark-operator:
+  webhook:
+    enable: true
+
+grafana:
+  adminUser: admin
+  adminPassword: admin
+  datasources: 
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: timescaledb
+        uid: "P6FFE9BCE28CDFF26"
+        type: grafana-postgresql-datasource
+        url: timescaledb:5432
+        access: proxy
+        isDefault: true
+        user: postgres
+        database: "sensordb"
+        secureJsonData:
+          password: password123
+  sidecar:
+    dashboards:
+      enabled: true
+
+emqx: 
+  brokerUrl: iot-app-emqx
+  topic: sensor-data
+  replicaCount: 1
+  emqxConfig:
+    ## Cluster discovery by 'k8s' or 'dns'
+    EMQX_CLUSTER__DISCOVERY: "k8s"
+    EMQX_MANAGEMENT__DEFAULT_APPLICATION__ID: "admin"
+    EMQX_MANAGEMENT__DEFAULT_APPLICATION__SECRET: "public"
+    # Deployment
+    EMQX_LOG__LEVEL: warning
+    EMQX_CLUSTER__K8S__SUFFIX: svc.cluster.local
+    EMQX_NAME: emqx
+    EMQX_CLUSTER__K8S__APISERVER: https://kubernetes.default.svc:443
+    EMQX_CLUSTER__K8S__NAMESPACE: iot-app
+    EMQX_CLUSTER__K8S__SERVICE_NAME: iot-app-emqx-headless
+    EMQX_CLUSTER__K8S__ADDRESS_TYPE: hostname
+    EMQX_CLUSTER__K8S__APP_NAME: emqx
+    EMQX_LOG__CONSOLE: console
+    EMQX_MQTT__ALLOW_ANONYMOUS: "true"
+    EMQX__ALLOW_ANONYMOUS: "true"
+    EMQX_NODE_COOKIE: "super_secret_cookie_value_12345"
+  
+  emqxLoadedPlugins: >
+    {emqx_conf, true}.
+    {emqx_dashboard, true}.
+    {emqx_management, true}.
+    {emqx_recon, true}.
+    {emqx_retainer, true}.
+    {emqx_rule_engine, true}.
+    {emqx_schema_registry, true}.
+    {emqx_bridge_kafka, true}.
+    {emqx_prometheus, true}.
+    {emqx_modules, true}.
+    {emqx_auth_http, false}.

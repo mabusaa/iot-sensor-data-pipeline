@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matt-to-kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matt-to-kafka
+  template:
+    metadata:
+      labels:
+        app: matt-to-kafka
+    spec:
+      containers:
+      - name: matt-to-kafka
+        imagePullPolicy: Always
+        image: {{ .Values.mattToKafka.image }}
+        env:
+          - name: MQTT_BROKER
+            value: {{ .Values.emqx.brokerUrl }}
+          - name: MQTT_PORT
+            value: "1883"
+          - name: MQTT_TOPIC
+            value: {{ .Values.emqx.topic }}
+          - name: KAFKA_BOOTSTRAP_SERVERS
+            value: {{ .Values.kafka.brokerUrl }}:{{ .Values.kafka.brokerPort }}
+          - name: KAFKA_TOPIC
+            value: {{ .Values.kafka.topic }}
+        ports:
+        - containerPort: 9092
+      initContainers:
+      - name: "init-kafka-check"
+        image: "curlimages/curl"
+        command: ["sh", "-c", "
+          until echo 'dummy' | nc -z  {{ .Values.kafka.brokerUrl }} {{ .Values.kafka.brokerPort }}; do
+            echo 'Waiting for Kafka to be ready...';
+            sleep 2;
+          done;
+          echo 'Kafka is ready.';
+        "]
+      - name: "init-emqx-check"
+        image: "curlimages/curl"
+        command: ["sh", "-c", "
+          until echo 'dummy' | nc -z {{ .Values.emqx.brokerUrl }} 1883; do
+            echo 'Waiting for emqx to be ready...';
+            sleep 2;
+          done;
+          echo 'emqx is ready.';
+        "]

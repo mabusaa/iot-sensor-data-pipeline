@@ -1,0 +1,21 @@
+dependencies:
+- name: spark-operator
+  repository: https://kubeflow.github.io/spark-operator
+  version: 1.4.6
+- name: strimzi-kafka-operator
+  repository: oci://quay.io/strimzi-helm
+  version: 0.43.0
+- name: timescaledb-single
+  repository: https://charts.timescale.com
+  version: 0.13.2
+- name: kafka-ui
+  repository: https://provectus.github.io/kafka-ui-charts
+  version: 0.7.6
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: 8.5.1
+- name: emqx
+  repository: https://repos.emqx.io/charts
+  version: 4.4.12
+digest: sha256:e7fff59e14d6ee42448c8fc3cb483af9943148f1a63e11b5acf6c6361c7c3b6c
+generated: "2024-09-27T14:43:29.3216228+03:00"

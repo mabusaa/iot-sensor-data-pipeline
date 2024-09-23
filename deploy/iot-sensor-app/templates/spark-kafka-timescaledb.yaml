@@ -1,0 +1,103 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: spark-kafka-to-timescaledb
+spec:
+  type: Python  # Using Python for Spark application
+  mode: cluster
+  image: {{ .Values.spark.image }}
+  imagePullPolicy: Always
+  mainApplicationFile: "local:///tmp/spark-apps/spark-kafka-to-timescaledb-app.py"  # Path to your Python app inside the container
+  sparkConf:
+    "spark.executor.extraClassPath": "/opt/spark/jars/*"
+    "spark.driver.extraClassPath": "/opt/spark/jars/*"
+    "spark.sql.streaming.kafka.allowNonConsecutiveOffsets": "true"  # Optional, based on your use case
+  sparkVersion: "3.4.3"
+  restartPolicy:
+    type: Never
+  driver:
+    initContainers:
+    - name: "init-kafka-check"
+      image: "curlimages/curl"
+      command: ["sh", "-c", "
+        until echo 'dummy' | nc -z  {{ .Values.kafka.brokerUrl }} {{ .Values.kafka.brokerPort }}; do
+          echo 'Waiting for Kafka to be ready...';
+          sleep 2;
+        done;
+        echo 'Kafka is ready.';
+      "]
+    - name: init-db-check
+      image: postgres:latest  # Use Postgres image to perform DB checks
+      command: [
+        "sh", "-c",
+        "until psql -h $DB_HOST -U $DB_USER -c 'SELECT 1'; do echo 'Waiting for database...'; sleep 2; done;"
+      ]
+      env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: DB_HOST
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: DB_USER
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: DB_PASSWORD
+    cores: 1
+    memory: "1024m"
+    serviceAccount: spark 
+    labels:
+      version: "3.4.3"
+    env: 
+      - name: KAFKA_BOOTSTRAP_SERVERS
+        value: {{ .Values.kafka.brokerUrl }}:{{ .Values.kafka.brokerPort }}
+      - name: KAFKA_TOPIC
+        value: {{ .Values.kafka.topic }}
+      - name: DB_TABLE
+        value: sensor_data
+      - name: DB_URL
+        valueFrom:
+          secretKeyRef:
+            name: db-secrets
+            key: DB_URL
+      - name: DB_USER
+        valueFrom:
+          secretKeyRef:
+            name: db-secrets
+            key: DB_USER
+      - name: DB_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: db-secrets
+            key: DB_PASSWORD
+  executor:
+    cores: 1
+    instances: 1
+    memory: 1024m
+    env: 
+      - name: KAFKA_BOOTSTRAP_SERVERS
+        value: {{ .Values.kafka.brokerUrl }}:{{ .Values.kafka.brokerPort }}
+      - name: KAFKA_TOPIC
+        value: {{ .Values.kafka.topic }}
+      - name: DB_TABLE
+        value: sensor_data
+      - name: DB_URL
+        valueFrom:
+          secretKeyRef:
+            name: db-secrets
+            key: DB_URL
+      - name: DB_USER
+        valueFrom:
+          secretKeyRef:
+            name: db-secrets
+            key: DB_USER
+      - name: DB_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: db-secrets
+            key: DB_PASSWORD
