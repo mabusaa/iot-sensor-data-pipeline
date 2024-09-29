@@ -57,10 +57,10 @@ The data flow of this project is as follows:
    ```bash
    git clone <repository-url>
    cd <repository-directory>
-   cd to deploy directory
+   cd to deploy directory```
 
 2. **Deploy suing helm**:
-   helm upgrade iot-app ./iot-sensor-app -n iot-app --install --create-namespace```
+   ```helm upgrade iot-app ./iot-sensor-app -n iot-app --install --create-namespace```
 
 3. Wait until all pods are in a running state
    ```
