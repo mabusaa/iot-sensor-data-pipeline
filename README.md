@@ -59,7 +59,8 @@ The data flow of this project is as follows:
    cd <repository-directory>
    cd to deploy directory```
 
-2. **Deploy suing helm**:
+2. **Deploy using helm**:
+
    ```helm upgrade iot-app ./iot-sensor-app -n iot-app --install --create-namespace```
 
 3. Wait until all pods are in a running state
