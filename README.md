@@ -59,9 +59,10 @@ The data flow of this project is as follows:
    cd <repository-directory>
    cd to deploy directory
 
+2. **Deploy suing helm**:
    helm upgrade iot-app ./iot-sensor-app -n iot-app --install --create-namespace```
 
-2. Wait until all pods are in a running state
+3. Wait until all pods are in a running state
    ```
     init-sensordata-db-2c5lm                                   0/1     Completed   0             14m
     iot-app-emqx-0                                             1/1     Running     0             19m
